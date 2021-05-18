@@ -37,7 +37,7 @@ $subscriber_table = $wpdb->prefix .'kpw_subscriber';
 $password_recovery_table = $wpdb->prefix.'kpw_password_recovery';
 $auto_auth_table = $wpdb->prefix.'kpw_automatic_authentication';
 
-kpw_log($_SESSION['kpw_user_id']);
+kpw_log('Cookie is '.$_COOKIE['kpw_token']);
 //attempt to log in via cookie
 if(!$_SESSION['kpw_user_id']){
 	if(isset($_COOKIE['kpw_user_id'], $_COOKIE['kpw_token'])){
@@ -368,15 +368,17 @@ add_shortcode(SIGNUPSC, function(){
 });
 
 add_shortcode(SUBSCRIBESC, function(){
-	global $kpw_response;
+	global $kpw_response, $kpw_sp, $subscriber_table, $wpdb;
 	
-	global $kpw_sp;
-	
+	if($_SESSION['kpw_user_id']){
+		$query = $wpdb->prepare("SELECT email FROM $subscriber_table WHERE id = %d", $_SESSION['kpw_user_id']);
+		$email = (string) $wpdb->get_var($query, 0, 0);
+	}
 	Response::$links = array(
 							'forgot' => kpw_get_link('kpw-recovery-page'),
 							'login' =>  kpw_get_link('kpw-login-page')
 							);
-	return $kpw_sp->subscribe($kpw_response);
+	return $kpw_sp->subscribe($kpw_response, $email);
 });
 
 register_activation_hook( __FILE__, function(){
