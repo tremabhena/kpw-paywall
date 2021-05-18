@@ -11,22 +11,22 @@ class Snippets{
 	}
 	
 	public function login($response){
-		//if($response->status === Response::MESSAGE) return $this->message($response);
+		if($response->status === Response::MESSAGE) return $this->message($response);
 		return $this->twig->render('login.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'links' => Response::$links]);
 	}
 
 	public function recover($response){
-		//if($response->status === Response::MESSAGE) return $this->message($response);
+		if($response->status === Response::MESSAGE) return $this->message($response);
 		return $this->twig->render('recover.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'links' => Response::$links]);
 	}
 	
 	public function recoverF($response, $reset_email, $reset_nonce){
-		//if($response->status === Response::MESSAGE) return $this->message($response);
+		if($response->status === Response::MESSAGE) return $this->message($response);
 		return $this->twig->render('recoverF.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'reset_email' => $reset_email, 'reset_nonce' => $reset_nonce, 'links' => Response::$links]);
 	}
 	
 	public function signup($response){
-		//if($response->status === Response::MESSAGE) return $this->message($response);
+		if($response->status === Response::MESSAGE) return $this->message($response);
 		return $this->twig->render('signup.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'links' => Response::$links]);
 	}
 	
@@ -35,7 +35,7 @@ class Snippets{
 	}
 	
 	public function subscribe($response, $subscribe){
-		//if($response->status === Response::MESSAGE) return $this->message($response);
+		if($response->status === Response::MESSAGE) return $this->message($response);
 		return $this->twig->render('subscribe.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'yearly_price'=>'2000', 'monthly_price'=>'8000', 'links' => Response::$links], 'email'=>$email);
 	}
 	
