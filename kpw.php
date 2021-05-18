@@ -118,24 +118,28 @@ add_action('init', function(){
 								kpw_log('User is valid');
 								if(isset($_SESSION['kpw_boomerang']['signup'])){
 									kpw_log('Boomerang is set');
-									wp_redirect($_SESSION['kpw_boomerang']['signup']);
+									//wp_redirect($_SESSION['kpw_boomerang']['signup']);
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.$_SESSION['kpw_boomerang']['signup'].'">here</a> to return to what you were viewing before.', Response::MESSAGE);
 									unset($_SESSION['kpw_boomerang']['signup']);
-									exit;
+									//exit;
 								}
 								elseif(!kpw_logged_in()) {
 									kpw_log('User is not logged in redirecting');
-									wp_redirect(kpw_get_link('kpw-login-page'));
-									exit;
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.kpw_get_link('kpw-login-page').'">here</a> to proceed to the log in page.', Response::MESSAGE);
+									//wp_redirect(kpw_get_link('kpw-login-page'));
+									//exit;
 								}
 								elseif($_SESSION['kpw_history']){
 									kpw_log('History is set');
-									wp_redirect($_SESSION['kpw_history']);
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.$_SESSION['kpw_history'].'">here</a> to return to what you were viewing before.', Response::MESSAGE);
+									//wp_redirect($_SESSION['kpw_history']);
 									//$_SESSION['kpw_history'] = false;
 									exit;
 								}
 								else {
 									kpw_log('Settle for home');
-									wp_redirect(home_url());
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.home_url().'">here</a> to start enjoying our content.', Response::MESSAGE);
+									//wp_redirect(home_url());
 									exit;
 								}
 							}
@@ -160,12 +164,15 @@ add_action('init', function(){
 								$link = esc_url_raw(kpw_get_link('kpw-recovery-final-page')."?kpw_key=$key&kpw_login=" . rawurlencode($login))."\r\n";
 								$message = 'Click on the following link or copy/paste into your browser to reset your password. It will only be valid for the next 30 minutes.'."\r\n".$link;
 								
-								wp_mail($email, 'Password reset link', $message);
+								if(wp_mail($email, 'Password reset link', $message)){
+									$kpw_response = new Response('The password reset email has been sent. You can also look in the spam folder if you cannot find it.', Response::MESSAGE);
+								}
+								else $kpw_response = new Response('Failed to send the password reset email. Please try again later.', Response::ERROR);
 							}
 							else break;
 							
 						}
-						else $kpw_response = new Response('Email address does not exist. Please recheck and try again.', Response::WARNING);
+						else $kpw_response = new Response('User with that email address does not exist. Please recheck and try again or <a href="'.kpw_get_link('kpw-signup-page').'">create</a> an account.', Response::WARNING);
 					}
 					else $kpw_response = new Response('Please enter a valid email address.', Response::WARNING);
 				}
@@ -246,8 +253,9 @@ add_action('init', function(){
 							$pollUrl = $response->pollUrl();
 							
 							$wpdb->update($paynow_payment_table, array('poll_url'=>$pollUrl), array('id'=>$reference),'%s', '%d');
-							wp_redirect($link);
-							exit;
+							$kpw_response = new Response('Please click <a href="'.$link'">here</a> to proceed to Paynow.', Response::MESSAGE);
+							//wp_redirect($link);
+							//exit;
 						}
 						else $kpw_response = new Response('Failed to connect to payment processor (Paynow). Please try again later.', Response::ERROR);
 					}
