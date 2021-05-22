@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Kainet Paywall
+Plugin Name: KPW Paywall
 */
 //to-do: fix css reset issue and sizing
 require_once('vendor/autoload.php');
@@ -9,8 +9,9 @@ use Kpw\Response;
 
 //remove this
 function kpw_log($message){
-	file_put_contents('kpw-log.txt', $message."\r\n", FILE_APPEND);
+	file_put_contents('kpw-log.txt', date('Y-m-d H:i:s').' '.$message."\r\n", FILE_APPEND);
 }
+
 const LOGINSC = 'kpw-login';
 const RECOVERYSC = 'kpw-recovery';
 const RECOVERYFSC = 'kpw-recoveryf';
@@ -19,15 +20,14 @@ const SUBSCRIBESC = 'kpw-subscribe';
 
 session_start();
 if(!isset($_SESSION['kpw_user_id'])) $_SESSION['kpw_user_id'] = false;
+if(!isset($_SESSION['kpw_user_email'])) $_SESSION['kpw_user_email'] = false;
 if(!isset($_SESSION['kpw_history'])) $_SESSION['kpw_history'] = false;
 if(!isset($_SESSION['kpw_boomerang'])) $_SESSION['kpw_boomerang'] = array();
+if(!isset($_SESSION['kpw_reset_email'])) $_SESSION['kpw_reset_email'] = false;
 
 //$kpw_response = new Response();
 $kpw_response = null;
-$reset_email = false;
-$reset_nonce = false;
 
-//added for the sake of register_activation_hook()
 global $wpdb;
 global $subscription_table, $paynow_payment_table, $subscriber_table, $password_recovery_table, $auto_auth_table;
 
@@ -37,23 +37,21 @@ $subscriber_table = $wpdb->prefix .'kpw_subscriber';
 $password_recovery_table = $wpdb->prefix.'kpw_password_recovery';
 $auto_auth_table = $wpdb->prefix.'kpw_automatic_authentication';
 
-kpw_log('Cookie is '.$_COOKIE['kpw_token']);
-//attempt to log in via cookie
-if(!$_SESSION['kpw_user_id']){
-	if(isset($_COOKIE['kpw_user_id'], $_COOKIE['kpw_token'])){
-		if($user_id = kpw_check_cookie()) $_SESSION['kpw_user_id'] = $user_id;
-	}
-}
-
 add_action('init', function(){
+	global $kpw_response;
+	
+	//attempt to log in via cookie
+	if(!$_SESSION['kpw_user_id']){
+		if(isset($_COOKIE['kpw_user_id'], $_COOKIE['kpw_token'])){
+			if($user = kpw_check_cookie()){
+				$_SESSION['kpw_user_id'] = $user['user_id'];
+				$_SESSION['kpw_user_email'] = $user['email'];
+			}
+		}
+	}
+	
 	if(isset($_POST['kpw_current_form'])){//is it kpw form submission?
-		global $kpw_response;
-		global $paynow_payment_table;
-		
-		global $reset_email;
-		global $reset_nonce;
-		
-		//Handle specific form submissions
+		//Handle form submissions from pages created by plug in
 		switch($_POST['kpw_current_form']){
 			case 'kpw_signin':
 				$email = $_POST['kpw_email'];
@@ -65,36 +63,26 @@ add_action('init', function(){
 				}
 				
 				if(is_email($email)){
-					if(strlen($password)>=6){
+					if(strlen($password)>=6 && strlen($password)<30){
 						kpw_logout();
 						if(kpw_login($email, $password)){//succesfully signed in
-							kpw_log('User signed in');
-							if(isset($_SESSION['kpw_boomerang']['login'])){
-								kpw_log('boomerang set');
-								wp_redirect($_SESSION['kpw_boomerang']['login']);
-								unset($_SESSION['kpw_boomerang']['login']);
-								exit;
-							}
-							elseif(!hasSubscription($email)) {
-								kpw_log('does not have subscription');
+							if(!kpw_has_subscription($email)) {
 								wp_redirect(kpw_get_link('kpw-subscribe-page'));
 								exit;
 							}
 							elseif(isset($_SESSION['kpw_history'])){
-								kpw_log('history is set');
-								wp_redirect($_SESSION['kpw_history']);//go to last article page
+								wp_redirect($_SESSION['kpw_history']);//go back to the last viewed article
 								//$_SESSION['kpw_history'] = false;
 								exit;
 							}
 							else {
-								kpw_log('going to home page');
 								wp_redirect(home_url());
 								exit;
 							}
 						}
 						else $kpw_response = new Response('Wrong password/username combination. Please try again.', Response::ERROR);
 					}
-					else $kpw_response = new Response('Password must be at least 6 characters long.', Response::WARNING);			
+					else $kpw_response = new Response('Your password must be at least 6 characters long.', Response::WARNING);			
 				}
 				else $kpw_response = new Response('Please enter a valid email address.', Response::WARNING);
 			break;
@@ -109,43 +97,38 @@ add_action('init', function(){
 					break;
 				}
 				
-				if(strlen($password1) >= 6){
+				if(strlen($password1) >= 6 && strlen($password)<30){
 					if($password1 === $password2){
-						if(!kpw_user_exists($email)){//check that user doesnt exist
+						if(!kpw_user_exists($email)){//check that user doesnt already exist
 							$user = kpw_add_user($email, $password1);
-							kpw_log('User does not exist');
 							if($user){//succesfully signed up
-								kpw_log('User is valid');
-								if(isset($_SESSION['kpw_boomerang']['signup'])){
+								/*if(isset($_SESSION['kpw_boomerang']['signup'])){
 									kpw_log('Boomerang is set');
 									//wp_redirect($_SESSION['kpw_boomerang']['signup']);
 									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.$_SESSION['kpw_boomerang']['signup'].'">here</a> to return to what you were viewing before.', Response::MESSAGE);
 									unset($_SESSION['kpw_boomerang']['signup']);
 									//exit;
-								}
-								elseif(!kpw_logged_in()) {
-									kpw_log('User is not logged in redirecting');
-									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.kpw_get_link('kpw-login-page').'">here</a> to proceed to the log in page.', Response::MESSAGE);
+								}*/
+								if(!kpw_logged_in()) {
+									$kpw_response = new Response('Your subscription account has been succesfully created. Click <a href="'.kpw_get_link('kpw-login-page').'">here</a> to proceed to the log in page.', Response::MESSAGE);
 									//wp_redirect(kpw_get_link('kpw-login-page'));
 									//exit;
 								}
 								elseif($_SESSION['kpw_history']){
-									kpw_log('History is set');
-									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.$_SESSION['kpw_history'].'">here</a> to return to what you were viewing before.', Response::MESSAGE);
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.$_SESSION['kpw_history'].'">here</a> to return to what you were trying to view earlier.', Response::MESSAGE);
 									//wp_redirect($_SESSION['kpw_history']);
 									//$_SESSION['kpw_history'] = false;
-									exit;
+									//exit;
 								}
 								else {
-									kpw_log('Settle for home');
-									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.home_url().'">here</a> to start enjoying our content.', Response::MESSAGE);
+									$kpw_response = new Response('Your account has been succesfully created. Click <a href="'.home_url().'">here</a> to continue.', Response::MESSAGE);
 									//wp_redirect(home_url());
-									exit;
+									//exit;
 								}
 							}
-							else $kpw_response = new Response('Failed to create user, please try again later.', Response::ERROR);
+							else $kpw_response = new Response('Failed to create user. Please try again later.', Response::ERROR);
 						}
-						else $kpw_response = new Response('User with this email already exists.', Response::WARNING);
+						else $kpw_response = new Response('User with this email address already exists.', Response::WARNING);
 					}
 					else $kpw_response = new Response('Passwords do not match.', Response::ERROR);
 				}
@@ -160,44 +143,46 @@ add_action('init', function(){
 							if ($response = kpw_get_recovery_key($email)){
 								$login = $response['token'];
 								$key = $response['user_id'];
-								$fid = get_option('kpw-recovery-final-page', false);
-								$link = esc_url_raw(kpw_get_link('kpw-recovery-final-page')."?kpw_key=$key&kpw_login=" . rawurlencode($login))."\r\n";
-								$message = 'Click on the following link or copy/paste into your browser to reset your password. It will only be valid for the next 30 minutes.'."\r\n".$link;
-								
-								if(wp_mail($email, 'Password reset link', $message)){
-									$kpw_response = new Response('The password reset email has been sent. You can also look in the spam folder if you cannot find it.', Response::MESSAGE);
+								$link = esc_url_raw(kpw_get_link('kpw-recovery-final-page')."?kpwk=$key&kpwv=".rawurlencode($login))."\r\n";
+								$message = 'Please click on the following link (or paste it into your browser) in order to reset your password. It will only be valid for the next 30 minutes.'."\r\n".$link;
+								if(kpw_mail($email, 'Password reset link', $message)){
+									$kpw_response = new Response('An email with the password reset link has been sent. Try also looking in the spam folder if you cannot find it in your inbox.<br/>Click <a href="'.get_permalink().'">here</a> to resend if you still cannot find it.', Response::MESSAGE);
 								}
 								else $kpw_response = new Response('Failed to send the password reset email. Please try again later.', Response::ERROR);
 							}
-							else break;
-							
+							else {
+								$kpw_response = new Response('An unexpected error has occurred. Please try again.', Response::ERROR);
+							}
 						}
-						else $kpw_response = new Response('User with that email address does not exist. Please recheck and try again or <a href="'.kpw_get_link('kpw-signup-page').'">create</a> an account.', Response::WARNING);
+						else $kpw_response = new Response('User with that email address does not exist. Please recheck and try again or <a href="'.kpw_get_link('kpw-signup-page').'">create</a> a new account.', Response::WARNING);
 					}
 					else $kpw_response = new Response('Please enter a valid email address.', Response::WARNING);
 				}
 				else $kpw_response = new Response('Please enter all the required fields.', Response::WARNING);
 			break;
 			case 'kpw_recover_final':
-				wp_verify_nonce('kpw_reset', 'kpw_reset');
-				$reset_email = false;
-				$email = sanitize_email($_POST['kpw_reset_email']);
+				if(!is_email($_SESSION['kpw_reset_email'])){
+					wp_redirect(kpw_get_link('kpw-recovery-page'));
+					exit;
+				}
+				$email = $_SESSION['kpw_reset_email'];
+				$_SESSION['kpw_reset_email'] = false;
+				
 				$password1 = $_POST['kpw_password1'];
 				$password2 = $_POST['kpw_password2'];
 				
-				if(!isset($email, $password1, $password2)){
-					$kpw_response = new Response('Please enter all the required fields.', Response::WARNING);
+				if(!isset($password1, $password2)){
+					$kpw_response = new Response('Please enter all the required information.', Response::WARNING);
 					break;
 				}
 				
 				if(strlen($password1) >= 6){
 					if($password1 === $password2){
-						if(kpw_user_exists($email)){
-							if(kpw_set_password($email, $password)){
-							
+						if($user_id = kpw_user_exists($email)){
+							if(kpw_set_password($email, $password1)){
 								$link = kpw_get_link('kpw-login-page');
-								
 								$kpw_response = new Response('Your password has been successfully reset. Click <a href="'.$link.'">here</a> to log in.', Response::MESSAGE);
+								kpw_delete_recovery_key($user_id);
 							}
 							else $kpw_response = new Response('An unexpected error occurred and the password was not reset. Please try again.', Response::ERROR);
 						}
@@ -207,19 +192,28 @@ add_action('init', function(){
 				else $kpw_response = new Response('Password must be at least 6 characters long.', Response::WARNING);
 			break;
 			case 'kpw_subscribe':
+				if(!kpw_logged_in()){
+					wp_redirect(kpw_get_link('kpw-login-page'));
+					exit;
+				}
 				$email = sanitize_email($_POST['kpw_email']);
 				$plan = $_POST['kpw_plan'];
 				
 				if(!isset($email, $plan)){
-					$kpw_response = new Response('Please enter all the required fields.', Response::WARNING);
+					$kpw_response = new Response('Please provide all the required information.', Response::WARNING);
 					break;
 				}
-				
+				if(!is_email($email)){
+					$kpw_response = new Response('Please enter a valid email address.', Response::WARNING);
+					break;
+				}
 				$kpw_options = get_option('kpw_options');
 				if(isset($kpw_options['paynow_key'], $kpw_options['paynow_id'])){
 					$paynow = new Paynow\Payments\Paynow(
 							$kpw_options['paynow_id'],
-							$kpw_options['paynow_key']
+							$kpw_options['paynow_key'],
+							'',
+							''
 					);
 					
 					if($plan === 'year' && isset($kpw_options['annual_fee'])){
@@ -236,15 +230,13 @@ add_action('init', function(){
 					}
 					else break;
 					
-					$query_result = $wpdb->insert($paynow_payment_table, array('email'=>$email, 'amount' => $amount), array('%s', '%f'));
-					if($query_result === 1){
+					if(kpw_add_paynow_transaction($_SESSION['kpw_user_email'], $amount) === 1){
+						global $wpdb;
 						$reference = (string) $wpdb->insert_id;
 						$resulturl = plugins_url("gateway/paynow/update.php?kpw_paynow_transid=$reference&kpw_plan=$plan", __FILE__ );
-						
 						$paynow->setResultUrl($resulturl);
-						$paynow->setReturnUrl(get_page_link().'?kpw_gateway=paynow&kpw_transid='.$reference);
-						
-						$payment = $paynow->createPayment('KPW'.$reference, $email);
+						$paynow->setReturnUrl(kpw_get_link('kpw-subscribe-page').'?kpw_gateway=paynow&kpw_transid='.$reference);
+						$payment = $paynow->createPayment('KPW Subscription #'.$reference, $email);
 						$payment->add('Content Subscription', $amount);
 						$response = $paynow->send($payment);
 						
@@ -252,8 +244,8 @@ add_action('init', function(){
 							$link = $response->redirectUrl();
 							$pollUrl = $response->pollUrl();
 							
-							$wpdb->update($paynow_payment_table, array('poll_url'=>$pollUrl), array('id'=>$reference),'%s', '%d');
-							$kpw_response = new Response('Please click <a href="'.$link'">here</a> to proceed to Paynow.', Response::MESSAGE);
+							kpw_update_paynow_transaction($pollUrl, $reference);
+							$kpw_response = new Response('Please click <a href="'.$link.'">here</a> to continue to Paynow.', Response::MESSAGE);
 							//wp_redirect($link);
 							//exit;
 						}
@@ -261,33 +253,87 @@ add_action('init', function(){
 					}
 					
 				}
+				else $kpw_response = new Response('This site unable to accept payments at this time. Please try again later.', Response::ERROR);
 			break;
 		}
 	}
-	elseif(isset($_GET['kpw_gateway'], $_GET['kpw_transid'])){
+	elseif(isset($_GET['kpw_gateway'], $_GET['kpw_transid'])){//redirected from Paynow
 		if($_GET['kpw_gateway']==='paynow'){
-			$query = $wpdb->prepare("SELECT paid FROM $paynow_payment_table WHERE id = %d", $_GET['kpw_transid']);
-			$paid = (intval($wpdb->get_var($query, 0, 0)) === 1);
-			if($paid) $kpw_response = new Response('Thank you for your payment', Response::MESSAGE);
+			if(kpw_paynow_paid($_GET['kpw_transid'])) $kpw_response = new Response('Thank you for your payment.', Response::MESSAGE);
 			else $kpw_response = new Response('Payment not yet received. You can refresh this page if you have already paid.', Response::MESSAGE);
 		}
 	}
-	elseif(isset($_GET['kpw_login'], $_GET['kpw_key'])){
-		if($email = kpw_check_recovery_key($_GET['kpw_key'], $_GET['kpw_login'])){
-			$reset_nonce = wp_nonce_field('kpw_reset', 'kpw_reset', true, false);
-			$reset_email = $email;
+	elseif(isset($_GET['kpwk'], $_GET['kpwv'])){//after clicking on password recovery link
+		if($email = kpw_check_recovery_key($_GET['kpwk'], $_GET['kpwv'])){
+			$_SESSION['kpw_reset_email'] = $email;
 		}
 		else {
-			$kpw_response =  new Response('This password reset link not valid or it has expired. Please try again.', Response::ERROR);
+			$_SESSION['kpw_reset_email'] = false;
+			$kpw_response =  new Response('This password reset link is invalid or it has expired. Please <a href="'.kpw_get_link('kpw-recovery-page').'">click here</a> to generate another one.', Response::MESSAGE);
 		}
 	}
-	else {
-		$_SESSION['kpw_history'] = $_SERVER['HTTP_REFERER'];
+});
+
+//This filter prevents the pages generated by the plugin from showing up on most sites themes
+add_filter('get_pages', function($pages){
+	return array_filter(
+			$pages,
+			function($page){
+				$page_ids = kpw_get_pages();
+				$flipped_page_ids = array_flip($page_ids);
+				
+				return !array_key_exists($page->ID, $flipped_page_ids);
+			});	
+});
+//Front-end paywall logic goes here
+//Use as dummy for time-being
+add_filter('the_content', function($content){
+	if(!is_user_logged_in()){//disable paywall for logged in Wordpress users
+		$post = get_post();
+		$kpw_active = get_post_meta($post->ID, 'kpw_active', true);
+		if($kpw_active === 'active'){
+			$page_ids = kpw_get_pages();
+			if(!is_page($page_ids)){//only active on normal site pages
+				if($_SESSION['kpw_user_id']){
+					if(!kpw_has_subscription()){//no active subscription
+						return 'Your subscription has run out. Click <a href="'.kpw_get_link('kpw_subscribe-page').'">here</a> to renew your subscription or <a href="'.kpw_get_link('kpw-login-page').'">here</a> to use a different account';
+					}
+				}
+				else return 'You are not logged in. Click <a href="'.kpw_get_link('kpw-login-page').'">here</a> to log in or <a href="'.kpw_get_link('kpw-signup-page').'">Sign up</a>';
+			}
+		}
 	}
-	
-	if(!is_user_logged_in()){
-			//paywall is active
-			kpw_log('paywall active');
+	return $content;
+});
+//keeps track of the last site page/article that visitor was on
+add_action('loop_start', function(){
+	if(in_the_loop()){
+		$page_ids = kpw_get_pages();
+		if(!is_page($page_ids)) {
+			$_SESSION['kpw_history'] = get_permalink();
+		}
+	}
+});
+
+add_action( 'add_meta_boxes', function(){
+	add_meta_box( 'kpw-meta', 'KPW Paywall', function($post, $box){
+		$kpw_active = get_post_meta($post->ID, 'kpw_active', true);
+		wp_nonce_field( plugin_basename( __FILE__ ), 'kpw_save_meta_box' );
+		?>
+		<label><input type="radio" name="kpw_paywall_active" value="inactive" <?php if($kpw_active !== 'active') echo 'checked'; ?>>Not Active on this post</label>
+		<br/>
+		<label><input type="radio" name="kpw_paywall_active" value="active" <?php if($kpw_active === 'active') echo 'checked'; ?>>Active on this post</label>
+		<?php
+}
+, 'post','normal', 'high', $callback_args );
+});
+add_action('save_post', function($post_id){
+	if(isset($_POST['kpw_paywall_active'])){
+		// if auto saving skip saving our meta box data
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+		//check nonce for security
+		wp_verify_nonce( plugin_basename( __FILE__ ), 'kpw_save_meta_box' );
+		update_post_meta( $post_id, 'kpw_active', sanitize_text_field( $_POST['kpw_paywall_active'] ) );
 	}
 });
 
@@ -320,18 +366,15 @@ add_action( 'wp_enqueue_scripts', function($hook){
 add_action( 'wp_enqueue_scripts', function($hook){
 	wp_enqueue_style( 'kpx',plugin_dir_url(__FILE__).'css/kpw-paywall-print.css', array(), false, 'print');
 }, 13);
-
+//might need to remove this shortcode and opt for meta-based paywalls
 $kpw_sp = new Snippets(plugin_dir_path(__FILE__));
 add_shortcode('paywall', function(){
-	global $kpw_response;
+	global $kpw_response, $kpw_sp;
 	
-	global $kpw_sp;
 	return $kpw_sp->popup($kpw_response);
 });
 add_shortcode(LOGINSC, function(){
-	global $kpw_response;
-	
-	global $kpw_sp;
+	global $kpw_response, $kpw_sp;
 	
 	Response::$links = array(
 							'forgot' => kpw_get_link('kpw-recovery-page'),
@@ -340,9 +383,7 @@ add_shortcode(LOGINSC, function(){
 	return $kpw_sp->login($kpw_response);
 });
 add_shortcode(RECOVERYSC, function(){
-	global $kpw_response;
-	
-	global $kpw_sp;
+	global $kpw_response, $kpw_sp;
 	
 	Response::$links = array(
 							'login' => kpw_get_link('kpw-login-page'),
@@ -351,22 +392,16 @@ add_shortcode(RECOVERYSC, function(){
 	return $kpw_sp->recover($kpw_response);
 });
 add_shortcode(RECOVERYFSC, function(){
-	global $reset_nonce;
-	global $reset_email;
-	global $kpw_response;
-	
-	global $kpw_sp;
+	global $kpw_response, $kpw_sp;
 	
 	Response::$links = array(
 							'login' => kpw_get_link('kpw-login-page'),
 							'create' =>  kpw_get_link('kpw-signup-page')
 							);
-	return $kpw_sp->recoverF($kpw_response, $reset_email, $reset_nonce);
+	return $kpw_sp->recoverF($kpw_response);
 });
 add_shortcode(SIGNUPSC, function(){
-	global $kpw_response;
-	
-	global $kpw_sp;
+	global $kpw_response, $kpw_sp;
 	
 	Response::$links = array(
 							'forgot' => kpw_get_link('kpw-recovery-page'),
@@ -377,16 +412,16 @@ add_shortcode(SIGNUPSC, function(){
 
 add_shortcode(SUBSCRIBESC, function(){
 	global $kpw_response, $kpw_sp, $subscriber_table, $wpdb;
-	
-	if($_SESSION['kpw_user_id']){
-		$query = $wpdb->prepare("SELECT email FROM $subscriber_table WHERE id = %d", $_SESSION['kpw_user_id']);
-		$email = (string) $wpdb->get_var($query, 0, 0);
-	}
+
 	Response::$links = array(
-							'forgot' => kpw_get_link('kpw-recovery-page'),
+							'create' => kpw_get_link('kpw-signup-page'),
 							'login' =>  kpw_get_link('kpw-login-page')
 							);
-	return $kpw_sp->subscribe($kpw_response, $email);
+	
+	$kpw_options = get_option( 'kpw_options' ); 
+	$monthly_fee = $kpw_options['monthly_fee'];
+	$annual_fee = $kpw_options['annual_fee'];
+	return $kpw_sp->subscribe($kpw_response, $_SESSION['kpw_user_email'], $monthly_fee, $annual_fee);
 });
 
 register_activation_hook( __FILE__, function(){
@@ -434,7 +469,9 @@ function kpw_create_page($post_title, $post_content, $page){
 			'post_status' => 'publish'
 		];
 		$fid = wp_insert_post($postarr, true);
-		is_wp_error($fid)? delete_option($page) : update_option($page, $fid);
+		
+		if(is_wp_error($fid)) delete_option($page);
+		else update_option($page, $fid);
 	}
 }
 
@@ -446,11 +483,13 @@ function kpw_sanitize_options($input){
 	return $input;
 }
 
-function hasSubscription($email){
-	global $subscription_table;
-	global $wpdb;
-	$query = $wpdb->prepare("SELECT COUNT(*) FROM $subscription_table WHERE email = %s AND expires > NOW()", $email);
-	return $wpdb->get_var($query, 0, 0) > 0;
+function kpw_has_subscription(){
+	global $subscription_table, $subscriber_table, $wpdb;
+	if($_SESSION['kpw_user_id']){
+		$query = $wpdb->prepare("SELECT N.expires FROM $subscription_table N, $subscriber_table R  WHERE R.id = %d AND N.email = R.email AND N.expires > NOW()", $_SESSION['kpw_user_id']);
+		return $wpdb->get_var($query, 0, 0);
+	}
+	else return false;
 } 
 
 function kpw_get_link($page_name){
@@ -460,10 +499,25 @@ function kpw_get_link($page_name){
 	return $link;
 }
 
-/**/
+//pages generated and used by plugin
+function kpw_get_pages(){
+	$plugin_pages = [
+					'kpw-login-page',
+					'kpw-signup-page',
+					'kpw-recovery-page',
+					'kpw-recovery-final-page',
+					'kpw-subscribe-page'
+				];
+	return array_filter(
+				array_map(function($plugin_page){
+						return get_option($plugin_page, false);
+					}, $plugin_pages)
+			);
+}
+/*Should try to optimise these db querying functions as much as possible*/
 function kpw_check_password($email, $password){
 	global $subscriber_table, $wpdb;
-	kpw_log($password_hash);
+	
 	$query = $wpdb->prepare("SELECT id, password_hash FROM $subscriber_table WHERE email = %s", $email);
 	$password_hash = (string) $wpdb->get_var($query, 1, 0);
 	if(wp_check_password($password, $password_hash)){
@@ -474,12 +528,13 @@ function kpw_check_password($email, $password){
 function kpw_user_exists($email){
 	global $subscriber_table, $wpdb;
 	
-	$query = $wpdb->prepare("SELECT COUNT(*) FROM $subscriber_table WHERE email = %s", $email);
-	return $wpdb->get_var($query, 0, 0) > 0;
+	$query = $wpdb->prepare("SELECT id FROM $subscriber_table WHERE email = %s", $email);
+	return $wpdb->get_var($query, 0, 0);
 }
 function kpw_login($email, $password, $remember = true){
 	if($user_id = kpw_check_password($email, $password)){
 		$_SESSION['kpw_user_id'] = $user_id;
+		$_SESSION['kpw_user_email'] = $email;
 		if($remember) kpw_set_login_cookie($user_id);
 		return true;
 	}
@@ -487,16 +542,16 @@ function kpw_login($email, $password, $remember = true){
 }
 function kpw_set_password($email, $password){
 	global $subscriber_table, $wpdb;
-	
 	$password_hash = wp_hash_password($password);
-	return $wpdb->update($subscriber_table, array('password_hash'=>$password), array('email'=>$email));
+	return $wpdb->update($subscriber_table, array('password_hash'=>$password_hash), array('email'=>$email));
 }
 function kpw_logged_in(){
-	if($_SESSION['kpw_user_id'] !== false) return true;
+	if($_SESSION['kpw_user_id'] !== false && is_email($_SESSION['kpw_user_email'])) return true;
 	else return false;
 }
 function kpw_logout(){
 	$_SESSION['kpw_user_id'] = false;
+	$_SESSION['kpw_user_email'] = false;
 	
 	setcookie ('kpw_user_id', '', time() - 3600);
 	setcookie ('kpw_token', '', time() - 3600);
@@ -509,7 +564,7 @@ function kpw_set_login_cookie($user_id){
 	
 	$inserted = (int) $wpdb->insert($auto_auth_table, array('user_id' => $user_id, 'token_hash' => $token_hash), array('%d', '%s'));
 	if($inserted){
-		$expire = time() + 60*60*24*7;//cookie expires after 10 days
+		$expire = time() + 60*60*24*10;//cookie expires after 10 days
 		return (
 			setcookie('kpw_user_id', $user_id, $expire)
 			&&
@@ -525,6 +580,7 @@ function kpw_add_user($email, $password){
 	
 	return $wpdb->insert($subscriber_table, array('email'=>$email, 'password_hash'=>$password_hash), array('%s','%s'));
 }
+
 function kpw_get_recovery_key($email){
 	global $password_recovery_table, $subscriber_table, $wpdb;
 	
@@ -534,9 +590,7 @@ function kpw_get_recovery_key($email){
 	$query = $wpdb->prepare("SELECT id FROM $subscriber_table WHERE email = %s", $email);
 	$user_id = (int) $wpdb->get_var($query, 0, 0);
 	if($user_id){
-		$insert_query = $wpdb->prepare("INSERT INTO $password_recovery_table(user_id, created, token_hash) VALUES(%d, NOW(), %s) ON DUPLICATE KEY UPDATE", $user_id, $token_hash);
-		//$inserted = (int) $wpdb->insert($password_recovery_table, array('user_id'=>$user_id, 'token_hash'=>$token_hash), array('%d','%s'));
-		$inserted = (int) $wpdb->query($insert_query);
+		$inserted = (int) $wpdb->replace($password_recovery_table, array('user_id'=>$user_id, 'token_hash'=>$token_hash), array('%d', '%s'));
 		if($inserted > 0)
 			return array ('token' => $token,
 				'user_id' => $user_id
@@ -555,18 +609,78 @@ function kpw_check_recovery_key($user_id, $token){
 	}
 	return false;
 }
+
+function kpw_delete_recovery_key($user_id){
+	global $password_recovery_table, $subscriber_table, $wpdb;
+	
+	$wpdb->delete($password_recovery_table, array('user_id'=>$user_id), '%d');
+}
+
 function kpw_check_cookie(){
-	global $auto_auth_table, $wpdb;
+	global $auto_auth_table, $subscriber_table, $wpdb;
 	
 	$user_id = $_COOKIE['kpw_user_id'];
 	$token = $_COOKIE['kpw_token'];
 	
-	$query = $wpdb->prepare("SELECT token_hash FROM $auto_auth_table WHERE user_id = %d ", $user_id);
-	$token_hash = (string) $wpdb->get_var($query, 0, 0);
-	if (wp_check_password($token, $token_hash)) return $user_id;
+	$query = $wpdb->prepare("SELECT A.token_hash, S.email FROM $auto_auth_table A, $subscriber_table S  WHERE A.user_id = %d AND A.user_id = S.id", $user_id);
+	if($rows =  $wpdb->get_results($query, ARRAY_A)){
+		foreach($rows as $row){
+			$token_hash = $row['token_hash'];
+			$email = $row['email'];
+			if (wp_check_password($token, $token_hash)) return array('email' => $email, 'user_id' => $user_id);
+		}
+	}
 	else return false;
 }
 
+function kpw_mail($to, $subject, $message){
+	function kpw_mail_address($from_email){
+		$kpw_options = get_option('kpw_options');
+		if($address = $kpw_options['site_email']){
+			if(is_email($address)){
+				return $address;
+			}
+		}
+		return $from_email;
+	}
+	function kpw_mail_sender($from_name){
+		$kpw_options = get_option('kpw_options');
+		if($site_name = $kpw_options['site_name']) return $site_name;
+		return $from_name;
+	}
+	
+	add_filter('wp_mail_from', 'kpw_mail_address');
+	add_filter('wp_mail_from_name', 'kpw_mail_sender');
+	$response = wp_mail($to, $subject, $message);
+	remove_filter('wp_mail_from_name', 'kpw_mail_sender');
+	remove_filter('wp_mail_from', 'kpw_mail_address');
+	
+	return $response;
+}
+
+function kpw_add_paynow_transaction($email, $amount){
+	global $wpdb, $paynow_payment_table;
+	
+	return (int) $wpdb->insert($paynow_payment_table, array('email'=>$email, 'amount' => $amount), array('%s', '%f'));
+}
+
+function kpw_update_paynow_transaction($pollUrl, $reference){
+	global $wpdb, $paynow_payment_table;
+	
+	$wpdb->update($paynow_payment_table, array('poll_url'=>$pollUrl), array('id'=>$reference),'%s', '%d');
+}
+function kpw_paynow_paid($transid){{
+	global $wpdb, $paynow_payment_table;
+	
+	$query = $wpdb->prepare("SELECT paid FROM $paynow_payment_table WHERE id = %d", $transid);
+	if(intval($wpdb->get_var($query, 0, 0)) === 1) return true;
+	else {
+		//fix this so that it checks on its own
+		return false;
+	}
+}
+	
+}	 
 function kpw_main_plugin_page(){
 ?>
 <div class="spectre-container">

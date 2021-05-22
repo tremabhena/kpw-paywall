@@ -20,9 +20,9 @@ class Snippets{
 		return $this->twig->render('recover.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'links' => Response::$links]);
 	}
 	
-	public function recoverF($response, $reset_email, $reset_nonce){
+	public function recoverF($response){
 		if($response->status === Response::MESSAGE) return $this->message($response);
-		return $this->twig->render('recoverF.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'reset_email' => $reset_email, 'reset_nonce' => $reset_nonce, 'links' => Response::$links]);
+		return $this->twig->render('recoverF.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'links' => Response::$links]);
 	}
 	
 	public function signup($response){
@@ -34,9 +34,9 @@ class Snippets{
 		return $this->twig->render('message.html', ['response'=>['message' => $response->message]]);
 	}
 	
-	public function subscribe($response, $subscribe){
+	public function subscribe($response, $email, $monthly_fee, $annual_fee){
 		if($response->status === Response::MESSAGE) return $this->message($response);
-		return $this->twig->render('subscribe.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'yearly_price'=>'2000', 'monthly_price'=>'8000', 'links' => Response::$links], 'email'=>$email);
+		return $this->twig->render('subscribe.html', ['response'=>['message' => $response->message, 'status' => $response->status], 'annual_fee'=>$annual_fee, 'monthly_fee'=>$monthly_fee, 'links' => Response::$links, 'email'=>$email]);
 	}
 	
 	public function popup(){
