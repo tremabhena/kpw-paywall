@@ -1,0 +1,43 @@
+{% extends "form.html" %}
+{% block content %}
+<input type="hidden" name="kpw_current_form" value="kpw_subscribe"/>
+<div class="spectre-form-group">
+	<div class="spectre-col-4 spectre-col-md-8">
+		<label class="spectre-form-label">Email</label>
+	</div>
+	<div class="spectre-col-4 spectre-col-md-8">
+		<input type="email" name="kpw_email" required class="spectre-form-input" value="{% if email %}{{ email }}{% endif %}"/>
+	</div>
+</div>
+<div class="spectre-form-group">
+	<div class="spectre-col-4  spectre-col-md-8">
+		<label class="spectre-form-label">Subscription Plan</label>
+	</div>
+	<div class="spectre-col-4  spectre-col-md-8">
+		{% if annual_fee %}
+		<label class="spectre-form-radio">
+		<input type="radio" name="kpw_plan" value="year" checked>
+		<i class="spectre-form-icon"></i> <!--Annual-->Z{{ annual_fee|format_currency('USD') }} (year)
+	  </label>
+	  {% endif %}
+	  {% if monthly_fee %}
+	  <label class="spectre-form-radio">
+		<input type="radio" name="kpw_plan" value="month">
+		<i class="spectre-form-icon"></i> <!--Monthly-->Z{{ monthly_fee|format_currency('USD') }} (month)
+	  </label>
+	  {% endif %}
+	</div>
+</div>
+<input type="submit" value="Proceed" class="spectre-btn spectre-btn-lg"/>
+<div class="spectre-columns spectre-mt-2">
+	<div class="spectre-column spectre-col-4 spectre-col-md-8">
+	<a href="{{ links.login }}">Log in to another account</a>
+	</div>
+	<div class="spectre-column spectre-col-4 spectre-col-md-8">
+	<a href="{{ links.create }}">Create new account</a>
+	</div>
+	<div class="spectre-column spectre-col-8">
+		<img src="{{ paynow_logo }}"/>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "form.html" %}
+{% block content %}
+<input type="hidden" name="kpw_current_form" value="kpw_recover"/>
+<div class="spectre-form-group">
+	<div class="spectre-col-4 spectre-col-md-8">
+		<label class="spectre-form-label">Enter your email address</label>
+	</div>
+	<div class="spectre-col-4 spectre-col-md-8">
+		<input type="email" name="kpw_email" required class="spectre-form-input"/>
+	</div>
+</div>
+<!--
+<div class="spectre-form-group">
+	<div class="spectre-col-4">
+		<label class="spectre-form-label">Enter new password</label>
+	</div>
+	<div class="spectre-col-4">
+		<input type="password" name="kpw_password1" required class="spectre-form-input"/>
+	</div>
+</div>
+<div class="spectre-form-group">
+	<div class="spectre-col-4">
+		<label class="spectre-form-label"> Repeat password</label>
+	</div>
+	<div class="spectre-col-4">
+		<input type="password" name="kpw_password2" required class="spectre-form-input"/>
+	</div>
+</div>
+-->
+<input type="submit" value="Recover" class="spectre-btn spectre-btn-lg"/>
+<div class="spectre-columns spectre-mt-2">
+	<div class="spectre-column spectre-col-4 spectre-col-md-8">
+	<a href="{{ links.login }}">Log in</a>
+	</div>
+	<div class="spectre-column spectre-col-4 spectre-col-md-8">
+	<a href="{{ links.create }}">Create new account</a>
+	</div>
+</div>
+{% endblock %}

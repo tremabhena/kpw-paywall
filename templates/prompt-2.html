@@ -1,0 +1,11 @@
+{# expected variables: price_month, price_year, links.subscribe, links.signin #}
+<p>
+	Dear reader,
+</p>
+<p>
+	You currently have no active subscriptions. Access this article and the rest of our content for only <em>ZWL{{ price_year }}/year</em>{% if price_month %} or <em>ZWL{{ price_month }}/month</em>{% endif %}.
+</p>
+<div>
+	<a  href="{{ links.subscribe }}">SUBSCRIBE</a> or <a href="{{ links.login }}">SIGN IN</a> to a different account.
+</div>
+	  

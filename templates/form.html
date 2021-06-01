@@ -1,0 +1,43 @@
+{% extends "container.html" %}
+{% block kpwContent %}
+<div class="spectre-container spectre-p-2">
+	{% if response.message %}
+	{% if response.status == 'error' %}
+	{% set status = 'spectre-toast-error' %}
+	{% elseif response.status == 'warning' %}
+	{% set status = 'spectre-toast-warning' %}
+	{% elseif response.status == 'success' %}
+	{% set status = 'spectre-toast-success' %}
+	{% elseif response.status == 'message' %}
+	{% set status = 'spectre-toast-primary' %}
+	{% else %}
+	{% set status = '' %}
+	{% endif %}
+	<div class="spectre-toast {{ status }}">
+		<button class="spectre-btn spectre-btn-clear spectre-float-right"></button>
+	{{ response.message | raw }}
+	</div>
+	{% endif %}
+	<form method="POST" class="spectre-form-horizontal">
+	{% block content %}
+	{% endblock %}
+	</form>
+</div>
+<!--<div class="spectre-modal spectre-active" id="modal-id">
+  <a href="#close" class="spectre-modal-overlay" aria-label="Close"></a>
+  <div class="spectre-modal-container">
+	<div class="spectre-modal-header">
+	  <a href="#close" class="spectre-btn spectre-btn-clear spectre-float-right" aria-label="Close"></a>
+	  <div class="spectre-modal-title spectre-h5">Modal title</div>
+	</div>
+	<div class="spectre-modal-body">
+	  <div class="spectre-content">
+		Awesome shit from the makers
+	  </div>
+	</div>
+	<div class="spectre-modal-footer">
+	  &copy; 2021
+	</div>
+  </div>
+</div>-->
+{% endblock %}
