@@ -382,8 +382,13 @@ add_action( 'admin_menu', function(){
 		kpw_create_frontend_pages();
 	});
 });
+add_action( 'admin_enqueue_scripts', function($hook){
+	if(stristr($hook, 'kpw_main_menu')){
+		wp_enqueue_style( 'kpw-back',plugin_dir_url(__FILE__).'css/kpw-paywall-back.min.css');
+	}
+});
 add_action( 'wp_enqueue_scripts', function($hook){
-	wp_enqueue_style( 'kp',plugin_dir_url(__FILE__).'css/kpw-paywall-front.min.css');
+	wp_enqueue_style( 'kpw-front',plugin_dir_url(__FILE__).'css/kpw-paywall-front.min.css');
 }, 12);
 
 add_shortcode(LOGINSC, function(){
@@ -500,7 +505,7 @@ function kpw_sanitize_options($input){
 function kpw_has_subscription(){
 	global $subscription_table, $subscriber_table, $wpdb;
 	if($_SESSION['kpw_user_id']){
-		$query = $wpdb->prepare("SELECT DATEDIFF(NOW(), N.expires) FROM $subscription_table N, $subscriber_table R  WHERE R.id = %d AND N.email = R.email AND N.expires > NOW()", $_SESSION['kpw_user_id']);
+		$query = $wpdb->prepare("SELECT DATEDIFF(N.expires, NOW()) FROM $subscription_table N, $subscriber_table R  WHERE R.id = %d AND N.email = R.email AND N.expires > NOW()", $_SESSION['kpw_user_id']);
 		return $wpdb->get_var($query, 0, 0);//should return number of days remaining
 	}
 	else return false;
