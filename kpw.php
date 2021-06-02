@@ -374,7 +374,7 @@ add_action('phpmailer_init', function($phpmailer){
 });
 add_action( 'admin_menu', function(){
         //to-do: insert plugin icon
-	add_menu_page( 'K.P.W Paywall', 'K.P.W',
+	add_menu_page( 'K.P.W Paywall', 'K.P.W Paywall',
 	'manage_options', 'kpw_main_menu', 'kpw_main_plugin_page',
 	plugins_url( '/images/logo.svg', __FILE__ ) );
 	
@@ -859,31 +859,29 @@ function kpw_main_plugin_page(){
 }
 function kpw_help_plugin_page(){
 ?>
-<h1>Help</h1>
-
 <h2>Plugin Settings Fields</h2>
-<h3>Monthly and Annual subscription fees</h3>
+<h4>Monthly and Annual subscription fees</h4>
 <p>These must be in ZWL, the currency used by Paynow, the payment processor which the plugin is integrated with by default.</p>
-<h3>Paynow Integration ID and Key</h3>
+<h4>Paynow Integration ID and Key</h4>
 <p>The pair can be obtained from the <a href="http://www.paynow.co.zw">Paynow website</a> (under Advanced Integration). You must first create and setup a Paynow merchant account.</p>
-<h3>Site name and email</h3>
+<h4>Site name and email</h4>
 <p>These are used to set the 'From' name and address in addition to the 'Reply-to' address in the headers of the automated emails sent by the plugin from your site. Try to use an existing email account in order to avoid running afoul of spam filters.</p>
 
 <h2>Activating the Paywall</h2>
 <p>
 	Please note that the paywall-
-	<ol>
+	<ul>
 		<li>Will need to be activated for individual posts.</li>
 		<li>Is not active on the site's home page.</li>
 		<li>Is automatically disabled for logged in Wordpress Users.</li>
-	</ol>
+	</ul>
 </p>
 <p>
 	In order to activate the paywall on an article:
 	<ol>
 		<li>Go to that post's edit screen</li>
-		<li>Find the KPW metabox right at the bottom of the article.</li>
-		<li>Activate (or deactivate) by selecting the appropriate option and then save or update the post.</>
+		<li>Find the KPW metabox right below the article.</li>
+		<li>Activate (or deactivate) by choosing the appropriate option and then save or update the post.</>
 	</ol>
 </p>
 <?php	
