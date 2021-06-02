@@ -1,9 +1,12 @@
 <?php
 /*
 Plugin Name: KPW Paywall
-Description: Wordpress plugin primarily targeted at Zimbabwean publishers for integrating paywall functionality into their sites. It enables site owners to accept ZWL payments (via Paynow) for monthly or annual subscriptions.
+Plugin URI: https://github.com/tremabhena/kpw-paywall
+Description: Wordpress plugin primarily targeted at Zimbabwean publishers for integrating paywall functionality into their websites. It allows site owners to accept ZWL payments (via Paynow Zimbabwe) for monthly or annual subscriptions to their content.
 Author: Treasure Sibusiso Mabhena
-Author URI: mailto:treasuremabhena@gmail.com/
+Requires at least: 3.0.0
+Requires PHP: 7.2.5
+Author URI: mailto:treasuremabhena@gmail.com
 */
 
 require_once('vendor/autoload.php');
@@ -474,7 +477,6 @@ function kpw_create_frontend_pages(){
 	kpw_create_page('Reset Password', "[$recoveryfsc]", 'kpw-recovery-final-page');
 	kpw_create_page('Subscribe', "[$subscribesc]", 'kpw-subscribe-page');
 }
-
 
 function kpw_create_page($post_title, $post_content, $page){
 	if(post_exists($post_title, $post_content) === 0){//post doesn't exist
