@@ -792,7 +792,7 @@ function kpw_main_plugin_page(){
 			<div class="spectre-col-2 spectre-col-xs-6">
 				 <div class="spectre-input-group">
 					 <span class="spectre-input-group-addon">ZWL</span>
-					 <input type="text" class="spectre-form-input" placeholder="400" name="kpw_options[monthly_fee]" value="<?php echo esc_attr($kpw_options['monthly_fee']); ?>">
+					 <input type="text" class="spectre-form-input" placeholder="400" required name="kpw_options[monthly_fee]" value="<?php echo esc_attr($kpw_options['monthly_fee']); ?>">
 				 </div>
 			</div>
 		</div>
@@ -803,7 +803,7 @@ function kpw_main_plugin_page(){
 			<div class="spectre-col-2 spectre-col-xs-6">
 				<div class="spectre-input-group">
 					<span class="spectre-input-group-addon">ZWL</span>
-					<input type="text" class="spectre-form-input" placeholder="4800" name="kpw_options[annual_fee]" value="<?php echo esc_attr($kpw_options['annual_fee']); ?>">
+					<input type="text" class="spectre-form-input" placeholder="4800" required name="kpw_options[annual_fee]" value="<?php echo esc_attr($kpw_options['annual_fee']); ?>">
 				</div>
 			</div>
 		</div>
