@@ -850,22 +850,24 @@ function kpw_main_plugin_page(){
 				</div>
 			</div>
 		</div>
-		<!--<button onclick="testEmail();" class="spectre-btn spectre-btn-link">Send Test Email</button>-->
 		<div class="spectre-col-4 spectre-col-mx-auto">
 			<input type="submit" class="spectre-btn spectre-btn-primary" value="Save"/>
 		</div>
 	</form>
 </div>
-<script type="text/javascript">
-	function testEmail(){
-		let address = prompt("Enter recipient email address");
-	}
-</script>
 <?php
 }
 function kpw_help_plugin_page(){
 ?>
-	<h1>Help</h1>
+<h1>Help</h1>
+<p>
+You need to provide the following information to the plugin before you can start using the paywall on your site:
+<ol>
+	<li>The monthly and annual subscription fees. These must be in ZWL, the currency used by Paynow, the payment processor which the plugin is integrated with by default.</li>
+	<li>The Paynow Integration ID and Key. This pair can be obtained from the <a href="http://www.paynow.co.zw">Paynow website</a> (under Advanced Integration). You must first create and setup a Paynow merchant account.</li>
+	<li>The Site name and email. These are used to set the 'From' name and address in addition to the 'Reply-to' address in the headers of the automated emails sent by the plugin from your site. Try to use existing email accounts in order to avoid running afoul of spam filters.</li>
+</ol>
+</p>
 <?php	
 }
 ?>
