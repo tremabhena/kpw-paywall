@@ -17,9 +17,9 @@
   -moz-appearance: none;
   appearance: none;
   background: #fff;
-  border: .05em solid #5755d9;
+  border: .05em solid #2e8b57;
   border-radius: .1em;
-  color: #5755d9;
+  color: #2e8b57;
   cursor: pointer;
   display: inline-block;
   font-size: .8em;
@@ -38,7 +38,7 @@
 }
 
 #spectre-kpw-container .spectre-btn:focus {
-  box-shadow: 0 0 0 .1rem rgba(87, 85, 217, .2);
+  box-shadow: 0 0 0 .1rem rgba(46, 139, 87, .2);
 }
 
 #spectre-kpw-container .spectre-btn:focus,
@@ -71,7 +71,7 @@
 }
 
 #spectre-kpw-container .spectre-btn.spectre-btn-primary {
-  background: #5755d9;
+  background: #2e8b57;
   border-color: #4b48d6;
   color: #fff;
 }
@@ -810,8 +810,8 @@
 }
 
 #spectre-kpw-container .spectre-form-input:focus {
-  border-color: #5755d9; 
-  box-shadow: 0 0 0 .1rem rgba(87, 85, 217, .2);
+  border-color: #2e8b57; 
+  box-shadow: 0 0 0 .1rem rgba(46, 139, 87, .2);
 }
 
 #spectre-kpw-container .spectre-form-input:-ms-input-placeholder {
@@ -888,8 +888,8 @@
 }
 
 #spectre-kpw-container .spectre-form-select:focus {
-  border-color: #5755d9; 
-  box-shadow: 0 0 0 .1rem rgba(87, 85, 217, .2);
+  border-color: #2e8b57; 
+  box-shadow: 0 0 0 .1rem rgba(46, 139, 87, .2);
 }
 
 #spectre-kpw-container .spectre-form-select::-ms-expand {
@@ -981,15 +981,15 @@
 #spectre-kpw-container .spectre-form-checkbox input:focus + .spectre-form-icon,
 #spectre-kpw-container .spectre-form-radio input:focus + .spectre-form-icon,
 #spectre-kpw-container .spectre-form-switch input:focus + .spectre-form-icon {
-  border-color: #5755d9; 
-  box-shadow: 0 0 0 .1rem rgba(87, 85, 217, .2);
+  border-color: #2e8b57; 
+  box-shadow: 0 0 0 .1rem rgba(46, 139, 87, .2);
 }
 
 #spectre-kpw-container .spectre-form-checkbox input:checked + .spectre-form-icon,
 #spectre-kpw-container .spectre-form-radio input:checked + .spectre-form-icon,
 #spectre-kpw-container .spectre-form-switch input:checked + .spectre-form-icon {
-  background: #5755d9;
-  border-color: #5755d9;
+  background: #2e8b57;
+  border-color: #2e8b57;
 }
 
 #spectre-kpw-container .spectre-form-checkbox .spectre-form-icon,
@@ -1051,8 +1051,8 @@
 }
 
 #spectre-kpw-container .spectre-form-checkbox input:indeterminate + .spectre-form-icon {
-  background: #5755d9;
-  border-color: #5755d9;
+  background: #2e8b57;
+  border-color: #2e8b57;
 }
 
 #spectre-kpw-container .spectre-form-checkbox input:indeterminate + .spectre-form-icon::before {
@@ -1326,16 +1326,16 @@
 }
 
 #spectre-kpw-container .spectre-text-primary {
-  color: #5755d9 !important;
+  color: #2e8b57 !important;
 }
 
 #spectre-kpw-container a.spectre-text-primary:focus,
 #spectre-kpw-container a.spectre-text-primary:hover {
-  color: #4240d4;
+  color: #28784b;
 }
 
 #spectre-kpw-container a.spectre-text-primary:visited {
-  color: #6c6ade;
+  color: #349e63;
 }
 
 #spectre-kpw-container .spectre-text-secondary {
@@ -1430,7 +1430,7 @@
 }
 
 #spectre-kpw-container .spectre-bg-primary {
-  background: #5755d9 !important;
+  background: #2e8b57 !important;
   color: #fff;
 }
 
@@ -1602,7 +1602,7 @@
 #spectre-kpw-container .spectre-loading::after {
   animation: loading 500ms infinite linear;
   background: transparent;
-  border: .1em solid #5755d9;
+  border: .1em solid #2e8b57;
   border-radius: 50%;
   border-right-color: transparent;
   border-top-color: transparent;
@@ -2044,8 +2044,8 @@
 }
 
 #spectre-kpw-container .spectre-toast.spectre-toast-primary {
-  background: rgba(87, 85, 217, .95);
-  border-color: #5755d9;
+  background: rgba(46, 139, 87, .95);
+  border-color: #2e8b57;
 }
 
 #spectre-kpw-container .spectre-toast.spectre-toast-success {
