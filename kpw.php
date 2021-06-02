@@ -374,7 +374,7 @@ add_action('phpmailer_init', function($phpmailer){
 });
 add_action( 'admin_menu', function(){
         //to-do: insert plugin icon
-	add_menu_page( 'Kainet Paywall', 'Kainet',
+	add_menu_page( 'K.P.W Paywall', 'K.P.W',
 	'manage_options', 'kpw_main_menu', 'kpw_main_plugin_page',
 	plugins_url( '/images/logo.svg', __FILE__ ) );
 	
@@ -860,6 +860,7 @@ function kpw_main_plugin_page(){
 function kpw_help_plugin_page(){
 ?>
 <h1>Help</h1>
+
 <h2>Plugin Settings Fields</h2>
 <h3>Monthly and Annual subscription fees</h3>
 <p>These must be in ZWL, the currency used by Paynow, the payment processor which the plugin is integrated with by default.</p>
@@ -873,8 +874,16 @@ function kpw_help_plugin_page(){
 	Please note that the paywall-
 	<ol>
 		<li>Will need to be activated for individual posts.</li>
-		<li>Is not active on the site home page.</li>
+		<li>Is not active on the site's home page.</li>
 		<li>Is automatically disabled for logged in Wordpress Users.</li>
+	</ol>
+</p>
+<p>
+	In order to activate the paywall on an article:
+	<ol>
+		<li>Go to that post's edit screen</li>
+		<li>Find the KPW metabox right at the bottom of the article.</li>
+		<li>Activate (or deactivate) by selecting the appropriate option and then save or update the post.</>
 	</ol>
 </p>
 <?php	
