@@ -860,13 +860,22 @@ function kpw_main_plugin_page(){
 function kpw_help_plugin_page(){
 ?>
 <h1>Help</h1>
+<h2>Plugin Settings Fields</h2>
+<h3>Monthly and Annual subscription fees</h3>
+<p>These must be in ZWL, the currency used by Paynow, the payment processor which the plugin is integrated with by default.</p>
+<h3>Paynow Integration ID and Key</h3>
+<p>The pair can be obtained from the <a href="http://www.paynow.co.zw">Paynow website</a> (under Advanced Integration). You must first create and setup a Paynow merchant account.</p>
+<h3>Site name and email</h3>
+<p>These are used to set the 'From' name and address in addition to the 'Reply-to' address in the headers of the automated emails sent by the plugin from your site. Try to use an existing email account in order to avoid running afoul of spam filters.</p>
+
+<h2>Activating the Paywall</h2>
 <p>
-You need to provide the following information to the plugin before you can start using the paywall on your site:
-<ol>
-	<li>The monthly and annual subscription fees. These must be in ZWL, the currency used by Paynow, the payment processor which the plugin is integrated with by default.</li>
-	<li>The Paynow Integration ID and Key. This pair can be obtained from the <a href="http://www.paynow.co.zw">Paynow website</a> (under Advanced Integration). You must first create and setup a Paynow merchant account.</li>
-	<li>The Site name and email. These are used to set the 'From' name and address in addition to the 'Reply-to' address in the headers of the automated emails sent by the plugin from your site. Try to use existing email accounts in order to avoid running afoul of spam filters.</li>
-</ol>
+	Please note that the paywall-
+	<ol>
+		<li>Will need to be activated for individual posts.</li>
+		<li>Is not active on the site home page.</li>
+		<li>Is automatically disabled for logged in Wordpress Users.</li>
+	</ol>
 </p>
 <?php	
 }
