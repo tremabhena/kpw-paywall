@@ -374,7 +374,7 @@ add_action('phpmailer_init', function($phpmailer){
 });
 add_action( 'admin_menu', function(){
         //to-do: insert plugin icon
-	add_menu_page( 'K.P.W', 'K.P.W',
+	add_menu_page( 'KPW', 'KPW',
 	'manage_options', 'kpw_main_menu', 'kpw_main_plugin_page',
 	plugins_url( '/images/logo.svg', __FILE__ ) );
 	
@@ -745,7 +745,7 @@ function kpw_paynow_has_paid($plan, $transid){//updates subscription table a pay
 function kpw_main_plugin_page(){
 ?>
 <div class="spectre-container">
-	<h1>K.P.W Paywall</h1>
+	<h1>KPW Paywall</h1>
 	<form method="post" action="options.php" class="spectre-form-horizontal">
 		<?php settings_fields( 'kpw-settings-group' ); 
 			
