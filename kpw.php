@@ -2,11 +2,11 @@
 /*
 Plugin Name: KPW Paywall
 Plugin URI: https://github.com/tremabhena/kpw-paywall
-Description: Wordpress plugin primarily targeted at Zimbabwean publishers for integrating paywall functionality into their websites. It allows site owners to accept ZWL payments (via Paynow Zimbabwe) for monthly or annual subscriptions to their content.
+Description: Plugin primarily targeted at Zimbabwean publishers who want to implement paywalls on their websites. It allows site owners to accept ZWL payments (via Paynow Zimbabwe) for monthly or annual subscriptions to their content.
 Author: Treasure Sibusiso Mabhena
 Requires at least: 3.0.0
 Requires PHP: 7.2.5
-Author URI: mailto:treasuremabhena@gmail.com
+Author URI: https://github.com/tremabhena/
 */
 
 require_once('vendor/autoload.php');
@@ -374,7 +374,7 @@ add_action('phpmailer_init', function($phpmailer){
 });
 add_action( 'admin_menu', function(){
         //to-do: insert plugin icon
-	add_menu_page( 'K.P.W Paywall', 'K.P.W Paywall',
+	add_menu_page( 'K.P.W', 'K.P.W',
 	'manage_options', 'kpw_main_menu', 'kpw_main_plugin_page',
 	plugins_url( '/images/logo.svg', __FILE__ ) );
 	
@@ -855,6 +855,7 @@ function kpw_main_plugin_page(){
 		</div>
 	</form>
 </div>
+<p>&copy; 2021 <a href="mailto:treasuremabhena@gmail.com">Treasure Sibusiso Mabhena</a></p>
 <?php
 }
 function kpw_help_plugin_page(){
@@ -884,6 +885,7 @@ function kpw_help_plugin_page(){
 		<li>Activate (or deactivate) by choosing the appropriate option and then save or update the post.</>
 	</ol>
 </p>
+<p>&copy; 2021 <a href="mailto:treasuremabhena@gmail.com">Treasure Sibusiso Mabhena</a></p>
 <?php	
 }
 ?>
